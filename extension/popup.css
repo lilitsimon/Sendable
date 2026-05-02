@@ -1,0 +1,179 @@
+:root {
+  color-scheme: light;
+  --bg: #f4efe5;
+  --panel: rgba(255, 252, 246, 0.9);
+  --panel-strong: #fffaf2;
+  --border: rgba(93, 71, 44, 0.16);
+  --text: #26190f;
+  --muted: #715c49;
+  --accent: #b65c38;
+  --accent-dark: #8f4426;
+  --accent-soft: rgba(182, 92, 56, 0.12);
+  --shadow: 0 20px 40px rgba(64, 42, 21, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 420px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 214, 170, 0.5), transparent 38%),
+    linear-gradient(180deg, #f7f1e7 0%, #efe5d6 100%);
+  color: var(--text);
+  font: 14px/1.5 "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.app {
+  padding: 18px;
+}
+
+.hero {
+  margin-bottom: 14px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.panel {
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.panel-output {
+  background: var(--panel-strong);
+}
+
+.section-header,
+.toolbar,
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.section-header {
+  margin-bottom: 10px;
+}
+
+.toolbar {
+  margin-top: 10px;
+}
+
+label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.meta {
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 168px;
+  resize: vertical;
+  padding: 14px;
+  border: 1px solid rgba(93, 71, 44, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+textarea:focus {
+  border-color: rgba(182, 92, 56, 0.5);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  background: #fffdf9;
+}
+
+textarea[readonly] {
+  background: rgba(255, 250, 243, 0.92);
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease, background 160ms ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button {
+  padding: 10px 14px;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, var(--accent) 0%, #c9734d 100%);
+  color: #fffaf4;
+}
+
+.secondary-button {
+  background: #2d2218;
+  color: #fff8ef;
+}
+
+.ghost-button {
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--text);
+}
+
+@media (max-width: 520px) {
+  body {
+    min-width: 360px;
+  }
+
+  .hero h1 {
+    font-size: 20px;
+  }
+
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions button {
+    flex: 1;
+  }
+}

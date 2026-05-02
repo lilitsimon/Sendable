@@ -1,0 +1,12 @@
+{
+  "name": "email-refiner-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check api/refine-email.js && node --check extension/popup.js && node --check extension/background.js && node --check extension/content.js"
+  },
+  "dependencies": {
+    "openai": "^4.97.0"
+  }
+}
