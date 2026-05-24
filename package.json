@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check api/refine-email.js && node --check api/capture-welcome-email.js && node --check extension/popup.js && node --check extension/background.js && node --check extension/content.js && node --check extension/floating-panel.js && node --check extension/welcome.js"
+    "check": "node --check api/_rateLimit.js && node --check api/refine-email.js && node --check api/capture-welcome-email.js && node --check extension/popup.js && node --check extension/background.js && node --check extension/content.js && node --check extension/floating-panel.js && node --check extension/welcome.js"
   },
   "dependencies": {
     "openai": "^4.97.0"

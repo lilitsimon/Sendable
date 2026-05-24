@@ -90,8 +90,19 @@
                 </div>
 
                 <form id="welcomeForm" class="welcome-form">
-                  <label class="field-label" for="emailInput">Your email address</label>
-                  <input id="emailInput" name="email" type="email" autocomplete="email" required />
+                  <label class="field-label" for="emailInput">
+                    Your email address <span class="required-mark" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="emailInput"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    inputmode="email"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    required
+                  />
 
                   <label class="switch-row" for="termsToggle">
                     <span class="switch">
@@ -167,6 +178,25 @@
                   </div>
 
                   <p id="guideStatus" class="welcome-guide-status" aria-live="polite"></p>
+                </div>
+              </section>
+
+              <section id="welcomeCompleteView" class="welcome-complete" hidden>
+                <div class="welcome-complete-card">
+                  <img
+                    class="welcome-complete-icon"
+                    src="icons/sendable-icon-128.png"
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <p class="eyebrow">You're ready</p>
+                  <h3>You're ready. Pin Sendable, then refresh any page where you write to make the button appear.</h3>
+                  <p class="welcome-complete-copy">
+                    Once the page refreshes, the floating button will be there whenever you want to refine a message without breaking your flow.
+                  </p>
+                  <button id="closeWelcomeButton" class="welcome-submit" type="button">
+                    Close this page
+                  </button>
                 </div>
               </section>
             </section>

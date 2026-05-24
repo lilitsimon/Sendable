@@ -303,6 +303,21 @@ if (window.top === window.self && !document.getElementById("sendable-floating-ro
     }
   });
 
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message?.type !== "OPEN_PANEL") {
+      return false;
+    }
+
+    if (!isButtonVisible) {
+      setButtonVisibility(true);
+      chrome.storage.local.set({ [STORAGE_KEYS.buttonVisible]: true });
+    }
+
+    openPanel();
+    sendResponse({ ok: true });
+    return false;
+  });
+
   chrome.storage.local.get([STORAGE_KEYS.buttonPosition, STORAGE_KEYS.buttonVisible], (stored) => {
     const savedPosition = stored[STORAGE_KEYS.buttonPosition];
     const savedVisibility =

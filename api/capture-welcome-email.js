@@ -1,3 +1,5 @@
+import { checkRateLimit, getClientIp } from "./_rateLimit.js";
+
 function setCorsHeaders(req, res) {
   const origin = req.headers.origin;
   const configuredOrigins = (process.env.ALLOWED_ORIGINS || "")
@@ -6,9 +8,9 @@ function setCorsHeaders(req, res) {
     .filter(Boolean);
 
   const isChromeExtension = typeof origin === "string" && origin.startsWith("chrome-extension://");
-  const isAllowedOrigin = configuredOrigins.length === 0 || configuredOrigins.includes(origin);
+  const isExplicitlyAllowed = configuredOrigins.length > 0 && configuredOrigins.includes(origin);
 
-  if (origin && (isChromeExtension || isAllowedOrigin)) {
+  if (origin && (isChromeExtension || isExplicitlyAllowed)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
@@ -78,6 +80,13 @@ export default async function handler(req, res) {
 
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed." });
+    return;
+  }
+
+  const rateCheck = checkRateLimit(getClientIp(req), { max: 5, windowMs: 60_000 });
+  if (!rateCheck.ok) {
+    res.setHeader("Retry-After", String(rateCheck.retryAfter));
+    res.status(429).json({ error: "Too many requests. Please slow down." });
     return;
   }
 

@@ -1,3 +1,5 @@
+import { checkRateLimit, getClientIp } from "./_rateLimit.js";
+
 const SYSTEM_PROMPT = `Act as a highly skilled native-level editor specializing in professional written communication across all formats, including emails, messages, Slack, LinkedIn, proposals, and any other professional or semi-professional text.
 
 Your role is to improve the user's text so it is clear, natural, well-structured, and ready to send, while strictly preserving the original meaning, intent, tone, style, and writing identity.
@@ -198,7 +200,7 @@ TRUST CHECK:
 - The output should feel like the same person, just clearer, more natural, and more confident.`;
 
 const MAX_INPUT_LENGTH = 12000;
-const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-5.4-mini";
+const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
 const SUPPORTED_MODE = "professional_text_refine_v1";
 
 function setCorsHeaders(req, res) {
@@ -209,9 +211,9 @@ function setCorsHeaders(req, res) {
     .filter(Boolean);
 
   const isChromeExtension = typeof origin === "string" && origin.startsWith("chrome-extension://");
-  const isAllowedOrigin = configuredOrigins.length === 0 || configuredOrigins.includes(origin);
+  const isExplicitlyAllowed = configuredOrigins.length > 0 && configuredOrigins.includes(origin);
 
-  if (origin && (isChromeExtension || isAllowedOrigin)) {
+  if (origin && (isChromeExtension || isExplicitlyAllowed)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
@@ -271,6 +273,12 @@ export default async function handler(req, res) {
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Use a POST request for this route." });
+  }
+
+  const rateCheck = checkRateLimit(getClientIp(req), { max: 20, windowMs: 60_000 });
+  if (!rateCheck.ok) {
+    res.setHeader("Retry-After", String(rateCheck.retryAfter));
+    return res.status(429).json({ error: "Too many requests. Please slow down and try again." });
   }
 
   if (!process.env.OPENAI_API_KEY) {

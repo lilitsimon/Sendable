@@ -6,6 +6,7 @@ const clearButton = document.getElementById("clearButton");
 const useSelectionButton = document.getElementById("useSelectionButton");
 const floatingControl = document.getElementById("floatingControl");
 const floatingButtonToggle = document.getElementById("floatingButtonToggle");
+const openPanelButton = document.getElementById("openPanelButton");
 const appContent = document.getElementById("appContent");
 const statusText = document.getElementById("statusText");
 const toast = document.getElementById("toast");
@@ -70,11 +71,15 @@ function updateCharacterCount() {
   inputCount.textContent = `${characters} characters • ${words} words`;
 }
 
-function persistState() {
-  return chrome.storage.local.set({
-    [STORAGE_KEYS.currentText]: state.currentText,
-    [STORAGE_KEYS.targetText]: state.targetText
-  });
+async function persistState() {
+  try {
+    await chrome.storage.local.set({
+      [STORAGE_KEYS.currentText]: state.currentText,
+      [STORAGE_KEYS.targetText]: state.targetText
+    });
+  } catch (_error) {
+    // storage failure is non-critical
+  }
 }
 
 function normalizeErrorMessage(error) {
@@ -211,7 +216,9 @@ function summarizeChanges(currentText, targetText) {
           : `<span class="preview-token">${safeToken}</span>`;
       }
 
-      return "";
+      return /\s+/u.test(operation.token)
+        ? ""
+        : `<span class="preview-token-removed">${safeToken}</span>`;
     })
     .join("");
 
@@ -224,19 +231,22 @@ function deriveToneIndicators(currentText, targetText, changeCount) {
   }
 
   const indicators = [];
-  const currentLength = currentText.trim().length;
-  const targetLength = targetText.trim().length;
+  const currentWords = (currentText.trim().match(/\S+/gu) || []).length;
+  const targetWords = (targetText.trim().match(/\S+/gu) || []).length;
+  const wordReduction = currentWords > 0 ? (currentWords - targetWords) / currentWords : 0;
 
-  if (targetLength < currentLength - 12) {
+  if (wordReduction > 0.1) {
     indicators.push("Tighter");
   }
 
-  if (/[.!?,:;]/u.test(targetText) && targetText !== currentText) {
-    indicators.push("Clearer");
+  if (changeCount <= 3) {
+    indicators.push("Corrected");
+  } else if (changeCount >= 8) {
+    indicators.push("Restructured");
   }
 
-  if (indicators.length < 3) {
-    indicators.unshift("More natural");
+  if (indicators.length < 2) {
+    indicators.push("More natural");
   }
 
   return indicators.slice(0, 3);
@@ -473,7 +483,14 @@ async function useSelectedText() {
   setToast("");
   setStatus("Looking for selected text");
 
-  const response = await chrome.runtime.sendMessage({ type: "GET_SELECTED_TEXT" });
+  let response;
+  try {
+    response = await chrome.runtime.sendMessage({ type: "GET_SELECTED_TEXT" });
+  } catch (_error) {
+    setToast("Couldn't read selected text. Try again.");
+    setStatus("");
+    return;
+  }
 
   if (!response?.ok || !response.text) {
     setToast(response?.error || "Select the text you want to work on first.");
@@ -502,6 +519,23 @@ async function updateFloatingButtonVisibility() {
   );
 }
 
+async function openFloatingPanel() {
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = tabs[0];
+
+  if (!tab?.id) {
+    setToast("Open a webpage first, then try again.");
+    return;
+  }
+
+  try {
+    await chrome.tabs.sendMessage(tab.id, { type: "OPEN_PANEL" });
+    window.close();
+  } catch (_error) {
+    setToast("Sendable can't open on this page.");
+  }
+}
+
 draftInput.addEventListener("input", async () => {
   state.currentText = draftInput.value;
   render();
@@ -514,5 +548,6 @@ copyButton.addEventListener("click", copyRefinedText);
 clearButton.addEventListener("click", clearAll);
 useSelectionButton.addEventListener("click", useSelectedText);
 floatingButtonToggle?.addEventListener("change", updateFloatingButtonVisibility);
+openPanelButton?.addEventListener("click", openFloatingPanel);
 
 hydrateState();

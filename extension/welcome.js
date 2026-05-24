@@ -2,7 +2,8 @@ const STORAGE_KEYS = {
   welcomeEmail: "sendable.welcomeEmail",
   welcomeNewsletter: "sendable.welcomeNewsletter",
   welcomeTermsAccepted: "sendable.welcomeTermsAccepted",
-  welcomeCompleted: "sendable.welcomeCompleted"
+  welcomeCompleted: "sendable.welcomeCompleted",
+  welcomeFinished: "sendable.welcomeFinished"
 };
 
 const emailInput = document.getElementById("emailInput");
@@ -20,6 +21,8 @@ const guideStepCopy = document.getElementById("guideStepCopy");
 const guideBackButton = document.getElementById("guideBackButton");
 const guideNextButton = document.getElementById("guideNextButton");
 const guideStatus = document.getElementById("guideStatus");
+const welcomeCompleteView = document.getElementById("welcomeCompleteView");
+const closeWelcomeButton = document.getElementById("closeWelcomeButton");
 const guideDots = Array.from(document.querySelectorAll(".guide-dot"));
 const guideScenes = Array.from(document.querySelectorAll("[data-guide-scene]"));
 
@@ -48,18 +51,105 @@ function setGuideStatus(message) {
   guideStatus.textContent = message;
 }
 
-function isValidEmail(email) {
+function getEmailValidationMessage(email) {
   const normalized = email.trim();
 
   if (!normalized) {
-    return false;
+    return "Add your email address to continue.";
+  }
+
+  if (normalized.length > 254) {
+    return "That email address is too long.";
+  }
+
+  if (/\s/u.test(normalized)) {
+    return "Add a valid email address to continue.";
+  }
+
+  const parts = normalized.split("@");
+
+  if (parts.length !== 2) {
+    return "Add a valid email address to continue.";
+  }
+
+  const [localPart, domainPart] = parts;
+
+  if (!localPart || !domainPart) {
+    return "Add a valid email address to continue.";
+  }
+
+  if (localPart.length > 64) {
+    return "That email address looks too long before the @.";
+  }
+
+  if (!/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+$/u.test(localPart)) {
+    return "Add a valid email address to continue.";
+  }
+
+  if (
+    localPart.startsWith(".") ||
+    localPart.endsWith(".") ||
+    domainPart.startsWith(".") ||
+    domainPart.endsWith(".")
+  ) {
+    return "Add a valid email address to continue.";
+  }
+
+  if (normalized.includes("..")) {
+    return "Add a valid email address to continue.";
+  }
+
+  if (!domainPart.includes(".")) {
+    return "Add a valid email address to continue.";
+  }
+
+  if (domainPart.split(".").some((segment) => !segment)) {
+    return "Add a valid email address to continue.";
+  }
+
+  const domainLabels = domainPart.split(".");
+  const topLevelDomain = domainLabels[domainLabels.length - 1];
+
+  if (!/^[A-Za-z]{2,24}$/u.test(topLevelDomain)) {
+    return "Add a valid email address to continue.";
+  }
+
+  if (
+    domainLabels.some(
+      (label) =>
+        label.length > 63 ||
+        label.startsWith("-") ||
+        label.endsWith("-") ||
+        !/^[A-Za-z0-9-]+$/u.test(label)
+    )
+  ) {
+    return "Add a valid email address to continue.";
   }
 
   if (!emailInput.checkValidity()) {
-    return false;
+    return "Add a valid email address to continue.";
   }
 
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/u.test(normalized);
+  return "";
+}
+
+function isValidEmail(email) {
+  return getEmailValidationMessage(email) === "";
+}
+
+function applyEmailValidationState() {
+  const value = emailInput.value;
+
+  if (!value.trim()) {
+    emailInput.setCustomValidity("");
+    emailInput.classList.remove("is-invalid");
+    return "";
+  }
+
+  const message = getEmailValidationMessage(value);
+  emailInput.setCustomValidity(message);
+  emailInput.classList.toggle("is-invalid", Boolean(message));
+  return message;
 }
 
 function updateSubmitState() {
@@ -129,9 +219,37 @@ function renderGuideStep(index) {
 function showGuide(email) {
   welcomeSignupView.hidden = true;
   welcomeGuideView.hidden = false;
+  welcomeCompleteView.hidden = true;
   guideGreeting.textContent = getGuideGreeting(email);
   setGuideStatus("");
   renderGuideStep(0);
+}
+
+function showCompletionView() {
+  welcomeSignupView.hidden = true;
+  welcomeGuideView.hidden = true;
+  welcomeCompleteView.hidden = false;
+}
+
+async function completeOnboarding() {
+  await chrome.storage.local.remove([
+    STORAGE_KEYS.welcomeEmail,
+    STORAGE_KEYS.welcomeNewsletter,
+    STORAGE_KEYS.welcomeTermsAccepted,
+    STORAGE_KEYS.welcomeCompleted
+  ]);
+
+  await chrome.storage.local.set({
+    [STORAGE_KEYS.welcomeFinished]: true
+  });
+
+  emailInput.value = "";
+  newsletterToggle.checked = true;
+  termsToggle.checked = true;
+  setStatus("");
+  setGuideStatus("");
+  updateSubmitState();
+  showCompletionView();
 }
 
 async function hydrateForm() {
@@ -139,13 +257,15 @@ async function hydrateForm() {
     STORAGE_KEYS.welcomeEmail,
     STORAGE_KEYS.welcomeNewsletter,
     STORAGE_KEYS.welcomeTermsAccepted,
-    STORAGE_KEYS.welcomeCompleted
+    STORAGE_KEYS.welcomeCompleted,
+    STORAGE_KEYS.welcomeFinished
   ]);
 
   const savedEmail = stored[STORAGE_KEYS.welcomeEmail];
   const savedNewsletter = stored[STORAGE_KEYS.welcomeNewsletter];
   const savedTerms = stored[STORAGE_KEYS.welcomeTermsAccepted];
   const savedCompleted = Boolean(stored[STORAGE_KEYS.welcomeCompleted]);
+  const savedFinished = Boolean(stored[STORAGE_KEYS.welcomeFinished]);
 
   if (typeof savedEmail === "string" && savedEmail.trim()) {
     emailInput.value = savedEmail;
@@ -168,7 +288,13 @@ async function hydrateForm() {
     // If Chrome doesn't provide a profile email, keep the field editable.
   }
 
+  applyEmailValidationState();
   updateSubmitState();
+
+  if (savedFinished) {
+    showCompletionView();
+    return;
+  }
 
   if (savedCompleted) {
     showGuide(emailInput.value.trim());
@@ -179,15 +305,11 @@ welcomeForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const email = emailInput.value.trim();
+  const emailValidationMessage = applyEmailValidationState();
 
-  if (!email) {
-    setStatus("Add your email address to continue.");
-    updateSubmitState();
-    return;
-  }
-
-  if (!isValidEmail(email)) {
-    setStatus("Add a valid email address to continue.");
+  if (emailValidationMessage) {
+    setStatus(emailValidationMessage);
+    emailInput.reportValidity();
     updateSubmitState();
     return;
   }
@@ -235,6 +357,7 @@ termsLink.addEventListener("click", (event) => {
 });
 
 emailInput.addEventListener("input", () => {
+  const emailValidationMessage = applyEmailValidationState();
   updateSubmitState();
 
   if (!emailInput.value.trim()) {
@@ -242,12 +365,22 @@ emailInput.addEventListener("input", () => {
     return;
   }
 
-  if (isValidEmail(emailInput.value)) {
+  if (!emailValidationMessage) {
     setStatus("");
     return;
   }
 
-  setStatus("Add a valid email address to continue.");
+  setStatus(emailValidationMessage);
+});
+
+emailInput.addEventListener("blur", () => {
+  const emailValidationMessage = applyEmailValidationState();
+
+  if (!emailValidationMessage) {
+    return;
+  }
+
+  setStatus(emailValidationMessage);
 });
 
 guideBackButton.addEventListener("click", () => {
@@ -262,7 +395,15 @@ guideNextButton.addEventListener("click", () => {
     return;
   }
 
-  setGuideStatus("You're ready. Pin Sendable, then refresh any page where you write to make the button appear.");
+  completeOnboarding();
+});
+
+closeWelcomeButton.addEventListener("click", () => {
+  window.close();
+
+  window.setTimeout(() => {
+    window.location.replace("about:blank");
+  }, 160);
 });
 
 hydrateForm();
