@@ -1,11 +1,13 @@
-# Email Refiner Extension
+# Sendable
 
-A Chrome extension and small backend proxy for refining professional email drafts without changing the writer's voice.
+Sendable is a Chrome extension and backend proxy for non-native professionals who already know what they want to say and just want it to sound clear, natural, and ready to send.
+
+Core promise: keep your voice, improve the writing.
 
 ## Structure
 
-- `extension/` Chrome extension popup, service worker, and content script
-- `api/` backend API routes for OpenAI calls
+- `extension/` Chrome extension popup, floating panel, service worker, and content scripts
+- `api/` backend route for Sendable refinement requests
 
 ## Local setup
 
@@ -19,4 +21,4 @@ A Chrome extension and small backend proxy for refining professional email draft
 ## API
 
 - `POST /api/refine-email`
-- Body: `{ "text": "...", "mode": "email_refine_v1" }`
+- Body: `{ "text": "...", "mode": "professional_text_refine_v1" }`

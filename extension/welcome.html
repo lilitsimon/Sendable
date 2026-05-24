@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to Sendable</title>
+    <link rel="stylesheet" href="welcome.css" />
+  </head>
+  <body>
+    <main class="welcome-page">
+      <section class="welcome-copy">
+        <h1>Sendable is ready to use.</h1>
+        <p class="welcome-intro">
+          Fix typos, grammar, spelling, clarity, and tone in seconds, without changing your voice.
+        </p>
+      </section>
+
+      <aside class="welcome-stage" aria-label="Sendable setup preview">
+        <div class="stage-shell">
+          <div class="stage-bar">
+            <div class="stage-brand">
+              <img src="icons/sendable-icon-128.png" alt="" aria-hidden="true" />
+              <div class="stage-brand-copy">
+                <div class="stage-title">Sendable</div>
+                <div class="stage-subtitle">Your words, just clearer.</div>
+              </div>
+            </div>
+            <button class="stage-close" type="button" aria-label="Minimize preview">
+              <span class="stage-minimize-icon" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div class="stage-canvas">
+            <div class="popup-preview" aria-hidden="true">
+              <header class="preview-hero">
+                <div class="preview-brand-row">
+                  <p class="eyebrow">Sendable</p>
+                  <span class="preview-pill">Your words, just clearer.</span>
+                </div>
+                <h2>Your words, just clearer.</h2>
+              </header>
+
+              <section class="preview-block">
+                <div class="preview-label-row">
+                  <span class="preview-label">Your draft</span>
+                  <span class="preview-link">Use selected text</span>
+                </div>
+                <div class="preview-area">
+                  Paste your message here. We’ll make it clearer, cleaner, and still yours.
+                </div>
+                <div class="preview-meta-row">
+                  <span>0 characters • 0 words</span>
+                  <div class="preview-buttons">
+                    <span>Clear</span>
+                    <span class="is-primary">Make it sendable</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="preview-block">
+                <div class="preview-label-row">
+                  <span class="preview-label">Sendable version</span>
+                  <span>0 changes</span>
+                </div>
+                <div class="preview-area is-light">Your sendable version will appear here.</div>
+                <div class="preview-meta-row">
+                  <span></span>
+                  <div class="preview-buttons">
+                    <span>Check again</span>
+                    <span>Copy text</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="welcome-card">
+              <div id="welcomeSignupView">
+                <div class="welcome-card-header">
+                  <img src="icons/sendable-icon-128.png" alt="" aria-hidden="true" />
+                  <div>
+                    <p class="eyebrow">Welcome to Sendable</p>
+                    <h3>Your words, just clearer.</h3>
+                  </div>
+                </div>
+
+                <div class="welcome-card-benefits">
+                  <p><strong>Free Forever!</strong> No credit card required.</p>
+                  <p><strong>Simple & Easy!</strong> No coding required.</p>
+                  <p><strong>Made for work writing.</strong> Clean up emails, DMs, and professional messages fast.</p>
+                </div>
+
+                <form id="welcomeForm" class="welcome-form">
+                  <label class="field-label" for="emailInput">Your email address</label>
+                  <input id="emailInput" name="email" type="email" autocomplete="email" required />
+
+                  <label class="switch-row" for="termsToggle">
+                    <span class="switch">
+                      <input id="termsToggle" name="terms" type="checkbox" />
+                      <span class="switch-track"></span>
+                    </span>
+                    <span>I agree to the <a href="#" id="termsLink">terms and conditions</a></span>
+                  </label>
+
+                  <label class="switch-row" for="newsletterToggle">
+                    <span class="switch">
+                      <input id="newsletterToggle" name="newsletter" type="checkbox" checked />
+                      <span class="switch-track"></span>
+                    </span>
+                    <span>I agree to opt in to Sendable updates</span>
+                  </label>
+
+                  <button id="welcomeSubmitButton" class="welcome-submit" type="submit">
+                    Continue
+                  </button>
+                </form>
+
+                <p id="welcomeStatus" class="welcome-status" aria-live="polite"></p>
+              </div>
+
+              <section id="welcomeGuideView" class="welcome-guide" hidden>
+                <p id="guideGreeting" class="welcome-guide-greeting"></p>
+
+                <div class="welcome-guide-panel">
+                  <p class="eyebrow">What's next?</p>
+                  <h3 id="guideStepTitle"></h3>
+                  <p id="guideStepCopy" class="welcome-guide-copy"></p>
+
+                  <div class="guide-scene-frame">
+                    <div class="guide-scene" data-guide-scene="0">
+                      <img
+                        class="guide-scene-image"
+                        src="icons/onboarding-1.png"
+                        alt="Pin Sendable from Chrome's extensions menu."
+                      />
+                    </div>
+
+                    <div class="guide-scene" data-guide-scene="1" hidden>
+                      <img
+                        class="guide-scene-image"
+                        src="icons/onboarding-2.png"
+                        alt="The Sendable floating button appearing on the page and moving."
+                      />
+                    </div>
+
+                    <div class="guide-scene" data-guide-scene="2" hidden>
+                      <img
+                        class="guide-scene-image"
+                        src="icons/onboarding-3.png"
+                        alt="Paste text into Sendable or use selected text, then click Make it sendable."
+                      />
+                    </div>
+                  </div>
+
+                  <div class="guide-progress" aria-hidden="true">
+                    <span class="guide-dot is-active"></span>
+                    <span class="guide-dot"></span>
+                    <span class="guide-dot"></span>
+                  </div>
+
+                  <div class="welcome-guide-actions">
+                    <button id="guideBackButton" class="welcome-guide-secondary" type="button">
+                      Back
+                    </button>
+                    <button id="guideNextButton" class="welcome-submit" type="button">
+                      Next
+                    </button>
+                  </div>
+
+                  <p id="guideStatus" class="welcome-guide-status" aria-live="polite"></p>
+                </div>
+              </section>
+            </section>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="welcome.js"></script>
+  </body>
+  </html>

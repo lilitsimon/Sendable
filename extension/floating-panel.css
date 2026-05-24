@@ -1,0 +1,290 @@
+#sendable-floating-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  pointer-events: none;
+}
+
+#sendable-floating-button {
+  position: fixed;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow:
+    0 16px 32px rgba(15, 23, 42, 0.2);
+  cursor: pointer;
+  pointer-events: auto;
+  overflow: visible;
+  transition:
+    transform 220ms ease,
+    box-shadow 180ms ease,
+    opacity 160ms ease;
+  transform: translateY(0) scale(1);
+}
+
+#sendable-floating-button:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 26px 52px rgba(15, 23, 42, 0.28);
+}
+
+#sendable-floating-button.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#sendable-floating-button.is-dragging {
+  cursor: grabbing;
+  transform: scale(1.03);
+}
+
+.sendable-button-icon {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  object-fit: contain;
+  transform: translateY(0) scale(1);
+  transition:
+    transform 200ms ease,
+    filter 220ms ease;
+  animation: sendable-button-breathe 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+#sendable-floating-button::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  z-index: 1;
+  border-radius: 16px;
+  background: radial-gradient(circle, rgba(7, 55, 178, 0.2) 0%, rgba(7, 55, 178, 0.07) 58%, transparent 74%);
+  opacity: 0.76;
+  filter: blur(8px);
+  transform: scale(0.94);
+  animation: sendable-button-pulse 3.2s ease-in-out infinite;
+  transition:
+    opacity 200ms ease,
+    transform 220ms ease,
+    filter 220ms ease;
+  pointer-events: none;
+}
+
+#sendable-floating-button:hover .sendable-button-icon {
+  transform: translateY(-2px) scale(1.08);
+  filter: saturate(1.12) brightness(1.08);
+}
+
+#sendable-floating-button:hover::after {
+  opacity: 1;
+  transform: scale(1.18);
+  filter: blur(14px);
+}
+
+#sendable-floating-button.is-dragging .sendable-button-icon,
+#sendable-floating-button.is-dragging::after {
+  animation: none;
+}
+
+#sendable-floating-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: none;
+  width: min(560px, calc(100vw - 24px));
+  height: min(820px, calc(100vh - 32px));
+  min-width: 420px;
+  min-height: 520px;
+  pointer-events: auto;
+  border: 1px solid rgba(72, 109, 172, 0.12);
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(243, 249, 255, 0.95) 0%, rgba(233, 242, 252, 0.94) 100%);
+  box-shadow:
+    0 34px 96px rgba(26, 51, 92, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(22px);
+}
+
+#sendable-floating-panel.is-open {
+  display: block;
+  animation: sendable-panel-in 180ms ease;
+}
+
+#sendable-floating-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 16px 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(242, 248, 255, 0.88) 100%);
+  border-bottom: 1px solid rgba(72, 109, 172, 0.12);
+  cursor: grab;
+  user-select: none;
+}
+
+#sendable-floating-panel-header.is-dragging {
+  cursor: grabbing;
+}
+
+#sendable-floating-panel-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+#sendable-floating-panel-brand-icon {
+  display: block;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  object-fit: contain;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+}
+
+#sendable-floating-panel-title {
+  color: #0f172a;
+  font: 720 18px/1.1 "SF Pro Display", Inter, "SF Pro Text", "Segoe UI", sans-serif;
+  letter-spacing: -0.03em;
+}
+
+#sendable-floating-panel-subtitle {
+  margin-top: 5px;
+  color: #64748b;
+  font: 13px/1.35 Inter, "SF Pro Text", "Segoe UI", sans-serif;
+  letter-spacing: -0.015em;
+}
+
+#sendable-floating-panel-close {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.98);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    background 160ms ease,
+    transform 140ms ease,
+    box-shadow 180ms ease;
+}
+
+#sendable-floating-panel-close::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 35%, rgba(47, 111, 237, 0.18), rgba(47, 111, 237, 0.02) 70%);
+  opacity: 0;
+  transform: scale(0.86);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+#sendable-floating-panel-close:hover {
+  background: #ffffff;
+  transform: translateY(-1px) scale(1.04);
+  box-shadow:
+    0 8px 18px rgba(47, 111, 237, 0.16),
+    inset 0 0 0 1px rgba(47, 111, 237, 0.14);
+}
+
+#sendable-floating-panel-close:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.sendable-minimize-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 2px;
+  border-radius: 999px;
+  background: #0f172a;
+  transform: translate(-50%, -50%);
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    width 160ms ease;
+}
+
+#sendable-floating-panel-close:hover .sendable-minimize-icon {
+  width: 14px;
+  background: rgb(7, 55, 178);
+  transform: translate(-50%, -50%) scaleX(1.06);
+}
+
+#sendable-floating-panel-frame {
+  display: block;
+  width: 100%;
+  height: calc(100% - 63px);
+  border: 0;
+  background: transparent;
+}
+
+@keyframes sendable-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sendable-button-pulse {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: scale(0.92);
+  }
+
+  50% {
+    opacity: 0.82;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes sendable-button-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-1px) scale(1.01);
+  }
+}
+
+@media (max-width: 640px) {
+  #sendable-floating-button {
+    right: 14px;
+    bottom: 14px;
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+  }
+
+  #sendable-floating-panel {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    min-width: 0;
+    height: min(780px, calc(100vh - 24px));
+  }
+}

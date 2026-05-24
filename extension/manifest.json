@@ -1,21 +1,44 @@
 {
   "manifest_version": 3,
-  "name": "Sendable",
-  "description": "Make your writing clearer and easier to send.",
+  "name": "Email and Message Proofreader: Sendable",
+  "description": "Fix typos, grammar, spelling, clarity, and tone in seconds, without changing your voice.",
   "version": "0.1.0",
-  "permissions": ["storage", "activeTab"],
+  "icons": {
+    "16": "icons/sendable-icon-16.png",
+    "32": "icons/sendable-icon-32.png",
+    "48": "icons/sendable-icon-48.png",
+    "128": "icons/sendable-icon-128.png"
+  },
+  "permissions": ["storage", "activeTab", "scripting", "identity"],
   "host_permissions": ["<all_urls>"],
   "action": {
-    "default_title": "Sendable",
+    "default_icon": {
+      "16": "icons/sendable-icon-16.png",
+      "32": "icons/sendable-icon-32.png"
+    },
+    "default_title": "Email and Message Proofreader: Sendable",
     "default_popup": "popup.html"
   },
   "background": {
     "service_worker": "background.js"
   },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "icons/sendable-icon-16.png", "icons/sendable-icon-32.png", "icons/sendable-icon-48.png", "icons/sendable-icon-128.png", "icons/sendable-icon-512.png", "icons/sendable-icon-1024.png"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "css": ["floating-panel.css"],
+      "js": ["floating-panel.js"],
       "run_at": "document_idle"
     }
   ]

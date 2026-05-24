@@ -8,45 +8,90 @@
   </head>
   <body>
     <main class="app">
-      <header class="hero">
-        <p class="eyebrow">Sendable</p>
-        <h1>Make your writing clearer and easier to send</h1>
-      </header>
+      <section class="panel app-shell">
+        <section id="floatingControl" class="floating-control">
+          <label class="floating-toggle-row" for="floatingButtonToggle">
+            <img
+              class="floating-toggle-icon"
+              src="icons/sendable-icon-128.png"
+              alt=""
+              aria-hidden="true"
+            />
+            <div class="floating-toggle-copy">
+              <span class="floating-toggle-title">Show floating button</span>
+              <span class="floating-toggle-hint">Turn it off now, then bring it back here later.</span>
+            </div>
+            <span class="toggle-switch">
+              <input id="floatingButtonToggle" type="checkbox" />
+              <span class="toggle-track"></span>
+            </span>
+          </label>
+        </section>
 
-      <section class="panel">
-        <div class="section-header">
-          <label for="draftInput">Your text</label>
-          <button id="useSelectionButton" class="ghost-button" type="button">Use selected text</button>
-        </div>
+        <div id="appContent">
+          <header class="hero">
+            <div class="brand-row">
+              <p class="eyebrow">Sendable</p>
+              <span class="trust-pill">Your words, just clearer.</span>
+            </div>
+            <h1>Your words, just clearer.</h1>
+          </header>
 
-        <textarea
-          id="draftInput"
-          placeholder="Paste or type your message, email, note, or other professional text here. We'll make it clearer, more natural, and easier to send, without changing your voice."
-        ></textarea>
+          <section class="editor-section">
+            <div class="section-header">
+              <div class="section-heading">
+                <label for="draftInput">Your draft</label>
+              </div>
+              <button id="useSelectionButton" class="ghost-button utility-button" type="button">Use selected text</button>
+            </div>
 
-        <div class="toolbar">
-          <span id="inputCount" class="meta">0 characters</span>
-          <div class="actions">
-            <button id="clearButton" class="ghost-button" type="button">Clear</button>
-            <button id="improveButton" class="primary-button" type="button">Improve text</button>
-          </div>
-        </div>
-      </section>
+            <textarea
+              id="draftInput"
+              placeholder="Paste your message here, or select text and pull it in with the button above. We’ll make it clearer, cleaner, and still yours."
+            ></textarea>
 
-      <section class="panel panel-output">
-        <div class="section-header">
-          <label for="outputInput">Refined version</label>
-          <span id="statusText" class="meta">Ready</span>
-        </div>
+            <div class="toolbar toolbar-editor">
+              <div class="meta-group">
+                <span id="inputCount" class="meta">0 characters</span>
+                <span id="statusText" class="meta"></span>
+              </div>
+              <div class="actions">
+                <button id="clearButton" class="ghost-button" type="button">Clear</button>
+                <button id="improveButton" class="primary-button" type="button">Make it sendable</button>
+              </div>
+            </div>
+          </section>
 
-        <textarea id="outputInput" readonly placeholder="Your refined text will appear here."></textarea>
+          <div class="section-divider" aria-hidden="true"></div>
 
-        <div class="toolbar">
-          <span id="toast" class="meta" aria-live="polite"></span>
-          <div class="actions">
-            <button id="retryButton" class="ghost-button" type="button">Try again</button>
-            <button id="copyButton" class="secondary-button" type="button">Copy</button>
-          </div>
+          <section class="preview-section">
+            <div class="section-header">
+              <div><span class="section-label">Sendable version</span></div>
+            </div>
+
+            <div class="signal-row" aria-live="polite">
+              <div id="toneIndicators" class="tone-indicators"></div>
+              <span id="suggestionCount" class="meta">0 changes</span>
+            </div>
+
+            <div
+              id="refinedDisplay"
+              class="refined-display is-empty"
+              role="textbox"
+              aria-readonly="true"
+              tabindex="0"
+            >
+              Your sendable version will appear here.
+            </div>
+
+            <div class="toolbar toolbar-footer">
+              <span id="toast" class="meta" aria-live="polite"></span>
+              <div class="actions">
+                <button id="retryButton" class="ghost-button tertiary-button" type="button">Check again</button>
+                <button id="copyButton" class="secondary-button" type="button">Copy text</button>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
     </main>

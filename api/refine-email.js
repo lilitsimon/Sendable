@@ -198,7 +198,7 @@ TRUST CHECK:
 - The output should feel like the same person, just clearer, more natural, and more confident.`;
 
 const MAX_INPUT_LENGTH = 12000;
-const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
+const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-5.4-mini";
 const SUPPORTED_MODE = "professional_text_refine_v1";
 
 function setCorsHeaders(req, res) {
@@ -270,11 +270,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ error: "Use a POST request for this route." });
   }
 
   if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: "Missing API key" });
+    return res.status(500).json({ error: "The Sendable API key is missing." });
   }
 
   let body;
@@ -283,22 +283,22 @@ export default async function handler(req, res) {
     body = await parseRequestBody(req);
   } catch (error) {
     console.error("Failed to parse request body", error);
-    return res.status(400).json({ error: "Invalid JSON body" });
+    return res.status(400).json({ error: "The request body couldn't be read." });
   }
 
   const text = typeof body.text === "string" ? body.text.trim() : "";
   const mode = typeof body.mode === "string" ? body.mode : SUPPORTED_MODE;
 
   if (mode !== SUPPORTED_MODE) {
-    return res.status(400).json({ error: "Unsupported mode" });
+    return res.status(400).json({ error: "That Sendable mode isn't supported." });
   }
 
   if (!text) {
-    return res.status(400).json({ error: "Text is required" });
+    return res.status(400).json({ error: "Add some text first." });
   }
 
   if (text.length > MAX_INPUT_LENGTH) {
-    return res.status(400).json({ error: "Text is too long" });
+    return res.status(400).json({ error: "That draft is too long to review at once." });
   }
 
   try {
@@ -324,18 +324,18 @@ export default async function handler(req, res) {
       console.error("OpenAI API error", data);
       return res
         .status(openAiResponse.status)
-        .json({ error: data.error?.message || "OpenAI API error" });
+        .json({ error: data.error?.message || "Sendable couldn't review this draft right now." });
     }
 
     const output = sanitizeOutput(data.choices?.[0]?.message?.content);
 
     if (!output) {
-      return res.status(502).json({ error: "The model returned an empty response" });
+      return res.status(502).json({ error: "No suggestion came back. Please try again." });
     }
 
     return res.status(200).json({ output });
   } catch (error) {
     console.error("Refine email request failed", error);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Sendable hit a snag. Please try again." });
   }
 }
