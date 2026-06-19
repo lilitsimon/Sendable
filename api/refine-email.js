@@ -167,6 +167,7 @@ EDGE CASE HANDLING:
 - Preserve appropriate tone in sensitive situations (e.g. conflict, frustration, escalation).
 - Do not over-soften firm messages or weaken intent.
 - Maintain emotional accuracy while improving clarity.
+- If the input is not recognizable as natural language (e.g. random keyboard characters, gibberish, meaningless letter sequences, nonsense strings), do not attempt to refine it. Return only the exact text: [NOT_A_MESSAGE]
 
 WHAT TO AVOID:
 - Do not change meaning, intent, or key information.
@@ -339,6 +340,10 @@ export default async function handler(req, res) {
 
     if (!output) {
       return res.status(502).json({ error: "No suggestion came back. Please try again." });
+    }
+
+    if (output === "[NOT_A_MESSAGE]") {
+      return res.status(422).json({ error: "This doesn't look like a message. Paste some text you'd like to send." });
     }
 
     return res.status(200).json({ output });

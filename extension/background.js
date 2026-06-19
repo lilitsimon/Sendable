@@ -12,7 +12,45 @@ function pickSelectionResult(results) {
   return "";
 }
 
+const SUBSCRIPTION_API = "https://makesendable.com/api/subscription/check";
+
+async function checkSubscription() {
+  const stored = await chrome.storage.local.get("sendable.sessionToken");
+  const token = stored["sendable.sessionToken"];
+  if (!token) return;
+  try {
+    const res = await fetch(SUBSCRIPTION_API, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    await chrome.storage.local.set({
+      "sendable.subscription": { ...data, checkedAt: Date.now() }
+    });
+  } catch {
+    // network failure — keep cached subscription state
+  }
+}
+
+chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) => {
+  if (message?.type === "SESSION_UPDATE" && message.token) {
+    sendResponse({ ok: true });
+    chrome.storage.local.set({ "sendable.sessionToken": message.token })
+      .then(() => checkSubscription());
+  }
+
+  if (message?.type === "SESSION_INVALIDATE") {
+    sendResponse({ ok: true });
+    chrome.storage.local.remove([
+      "sendable.sessionToken",
+      "sendable.subscription"
+    ]);
+  }
+});
+
 chrome.runtime.onInstalled.addListener((details) => {
+  chrome.alarms.create("subscription-refresh", { periodInMinutes: 60 });
+
   if (details.reason !== "install") {
     return;
   }
@@ -20,6 +58,16 @@ chrome.runtime.onInstalled.addListener((details) => {
   chrome.tabs.create({
     url: chrome.runtime.getURL("welcome.html")
   });
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  chrome.alarms.create("subscription-refresh", { periodInMinutes: 60 });
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "subscription-refresh") {
+    checkSubscription();
+  }
 });
 
 function readSelectionInPage() {

@@ -14,15 +14,27 @@ const inputCount = document.getElementById("inputCount");
 const suggestionCount = document.getElementById("suggestionCount");
 const toneIndicators = document.getElementById("toneIndicators");
 const refinedDisplay = document.getElementById("refinedDisplay");
+const upgradeWall = document.getElementById("upgradeWall");
+const previewSection = document.getElementById("previewSection");
+const sectionDivider = document.getElementById("sectionDivider");
+const editorSection = document.querySelector(".editor-section");
+const heroSection = document.querySelector(".hero");
+const checksRemaining = document.getElementById("checksRemaining");
+const accountSection = document.getElementById("accountSection");
 const COPY_BUTTON_LABEL = "Copy text";
 const IMPROVE_BUTTON_LABEL = "Make it sendable";
 const EMPTY_PREVIEW_LABEL = "Your sendable version will appear here.";
+const FREE_DAILY_LIMIT = 10;
 let copyFeedbackTimeoutId = null;
 
 const STORAGE_KEYS = {
   currentText: "sendable.currentText",
   targetText: "sendable.targetText",
-  floatingButtonVisible: "sendable.floatingButtonVisible"
+  floatingButtonVisible: "sendable.floatingButtonVisible",
+  dailyCount: "sendable.dailyChecks.count",
+  dailyDate: "sendable.dailyChecks.date",
+  subscription: "sendable.subscription",
+  sessionToken: "sendable.sessionToken"
 };
 
 const state = {
@@ -30,13 +42,114 @@ const state = {
   targetText: "",
   isLoading: false,
   changeCount: 0,
-  isFloatingButtonVisible: true
+  isFloatingButtonVisible: true,
+  checksUsedToday: 0,
+  isPro: false,
+  isSignedIn: false,
+  accountEmail: null,
+  renewsAt: null
 };
 
 const isEmbeddedPanel = window.top !== window.self;
 
+function getTodayString() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function showUpgradeWall() {
+  upgradeWall.hidden = false;
+  previewSection.hidden = true;
+  sectionDivider.hidden = true;
+  editorSection.hidden = true;
+  heroSection.hidden = true;
+}
+
+function hideUpgradeWall() {
+  upgradeWall.hidden = true;
+  previewSection.hidden = false;
+  sectionDivider.hidden = false;
+  editorSection.hidden = false;
+  heroSection.hidden = false;
+}
+
+function updateChecksRemainingDisplay() {
+  if (state.isPro || state.checksUsedToday === 0) {
+    checksRemaining.textContent = "";
+    return;
+  }
+  const left = FREE_DAILY_LIMIT - state.checksUsedToday;
+  if (left > 0) {
+    checksRemaining.textContent = `${left} free check${left === 1 ? "" : "s"} left today`;
+  } else {
+    checksRemaining.textContent = "";
+  }
+}
+
 if (isEmbeddedPanel) {
   document.body.classList.add("embedded-panel");
+}
+
+function formatRenewalDate(isoString) {
+  if (!isoString) return null;
+  try {
+    return new Date(isoString).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  } catch {
+    return null;
+  }
+}
+
+function renderAccountSection() {
+  if (!accountSection || isEmbeddedPanel) return;
+
+  if (!state.isSignedIn) {
+    accountSection.innerHTML = `<a class="account-signin-link" href="https://makesendable.com/login" target="_blank" rel="noopener noreferrer">Sign in to activate Pro →</a>`;
+    return;
+  }
+
+  const badge = state.isPro
+    ? `<span class="account-pro-badge">Pro</span>`
+    : `<span class="account-free-badge">Free</span>`;
+  const email = state.accountEmail ? `<span class="account-email">${escapeHtml(state.accountEmail)}</span>` : "";
+
+  if (state.isPro) {
+    const renewalDate = formatRenewalDate(state.renewsAt);
+    const renewalRow = renewalDate
+      ? `<div class="account-sub-row"><span class="account-sub-label">Renews</span><span class="account-sub-value">${escapeHtml(renewalDate)}</span></div>`
+      : "";
+
+    accountSection.innerHTML = `
+      <div class="account-card">
+        <div class="account-row">
+          <div class="account-info">${badge}${email}</div>
+          <button class="account-signout-btn" id="accountSignOutBtn">Sign out</button>
+        </div>
+        ${renewalRow}
+        <div class="account-manage-row">
+          <a class="account-manage-link" href="https://makesendable.com/account" target="_blank" rel="noopener noreferrer">Manage subscription →</a>
+        </div>
+      </div>
+    `;
+  } else {
+    accountSection.innerHTML = `
+      <div class="account-row">
+        <div class="account-info">${badge}${email}</div>
+        <button class="account-signout-btn" id="accountSignOutBtn">Sign out</button>
+      </div>
+    `;
+  }
+
+  document.getElementById("accountSignOutBtn")?.addEventListener("click", signOut);
+}
+
+async function signOut() {
+  await chrome.storage.local.remove([STORAGE_KEYS.sessionToken, STORAGE_KEYS.subscription]);
+  state.isPro = false;
+  state.isSignedIn = false;
+  state.accountEmail = null;
+  state.renewsAt = null;
+  hideUpgradeWall();
+  renderAccountSection();
+  updateChecksRemainingDisplay();
 }
 
 function setStatus(message) {
@@ -372,6 +485,8 @@ function render() {
   renderRefinedDisplay();
   renderToneIndicators();
   suggestionCount.textContent = getSuggestionCountLabel(state.targetText, state.changeCount);
+  updateChecksRemainingDisplay();
+  renderAccountSection();
   setLoading(state.isLoading);
 }
 
@@ -379,7 +494,11 @@ async function hydrateState() {
   const stored = await chrome.storage.local.get([
     STORAGE_KEYS.currentText,
     STORAGE_KEYS.targetText,
-    STORAGE_KEYS.floatingButtonVisible
+    STORAGE_KEYS.floatingButtonVisible,
+    STORAGE_KEYS.dailyCount,
+    STORAGE_KEYS.dailyDate,
+    STORAGE_KEYS.subscription,
+    STORAGE_KEYS.sessionToken
   ]);
 
   state.currentText = stored[STORAGE_KEYS.currentText] || "";
@@ -388,6 +507,20 @@ async function hydrateState() {
     typeof stored[STORAGE_KEYS.floatingButtonVisible] === "boolean"
       ? stored[STORAGE_KEYS.floatingButtonVisible]
       : true;
+
+  state.isPro = stored[STORAGE_KEYS.subscription]?.isPro === true;
+  state.isSignedIn = !!stored[STORAGE_KEYS.sessionToken];
+  state.accountEmail = stored[STORAGE_KEYS.subscription]?.email ?? null;
+  state.renewsAt = stored[STORAGE_KEYS.subscription]?.renewsAt ?? null;
+
+  const storedDate = stored[STORAGE_KEYS.dailyDate];
+  state.checksUsedToday = storedDate === getTodayString()
+    ? (stored[STORAGE_KEYS.dailyCount] || 0)
+    : 0;
+
+  if (!state.isPro && state.checksUsedToday >= FREE_DAILY_LIMIT && state.currentText) {
+    showUpgradeWall();
+  }
 
   render();
 }
@@ -398,6 +531,21 @@ async function refineText() {
   if (!text) {
     setToast("Add a draft to get started.");
     setStatus("Paste a message or use selected text");
+    return;
+  }
+
+  if (text.length < 10) {
+    setToast("Your draft is too short to check. Add a bit more text.");
+    return;
+  }
+
+  if (text.length > 12000) {
+    setToast("That draft is too long. Try breaking it into shorter sections.");
+    return;
+  }
+
+  if (!state.isPro && state.checksUsedToday >= FREE_DAILY_LIMIT) {
+    showUpgradeWall();
     return;
   }
 
@@ -440,6 +588,15 @@ async function refineText() {
 
     state.targetText = data.output || "";
     setToast("A few refinements, same meaning.");
+
+    if (!state.isPro) {
+      state.checksUsedToday += 1;
+      await chrome.storage.local.set({
+        [STORAGE_KEYS.dailyCount]: state.checksUsedToday,
+        [STORAGE_KEYS.dailyDate]: getTodayString()
+      });
+      updateChecksRemainingDisplay();
+    }
   } catch (error) {
     setToast(normalizeErrorMessage(error.message));
     setStatus("Couldn’t review this draft");
@@ -475,6 +632,7 @@ async function clearAll() {
   state.changeCount = 0;
   setToast("");
   setStatus("");
+  hideUpgradeWall();
   render();
   await persistState();
 }
@@ -538,7 +696,10 @@ async function openFloatingPanel() {
 
 draftInput.addEventListener("input", async () => {
   state.currentText = draftInput.value;
-  render();
+  updateCharacterCount();
+  clearButton.disabled = state.isLoading || (!state.currentText && !state.targetText);
+  retryButton.disabled = state.isLoading || !draftInput.value.trim();
+  copyButton.disabled = state.isLoading || !(state.targetText.trim() || draftInput.value.trim());
   await persistState();
 });
 
@@ -549,5 +710,24 @@ clearButton.addEventListener("click", clearAll);
 useSelectionButton.addEventListener("click", useSelectedText);
 floatingButtonToggle?.addEventListener("change", updateFloatingButtonVisibility);
 openPanelButton?.addEventListener("click", openFloatingPanel);
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local") return;
+
+  if (changes[STORAGE_KEYS.subscription]) {
+    const newSub = changes[STORAGE_KEYS.subscription].newValue;
+    state.isPro = newSub?.isPro === true;
+    state.accountEmail = newSub?.email ?? null;
+    state.renewsAt = newSub?.renewsAt ?? null;
+    if (state.isPro) hideUpgradeWall();
+    renderAccountSection();
+    updateChecksRemainingDisplay();
+  }
+
+  if (changes[STORAGE_KEYS.sessionToken]) {
+    state.isSignedIn = !!changes[STORAGE_KEYS.sessionToken].newValue;
+    renderAccountSection();
+  }
+});
 
 hydrateState();
