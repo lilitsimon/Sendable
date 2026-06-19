@@ -70,7 +70,12 @@ chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) =>
     sendResponse({ ok: true });
     const toStore = { "sendable.sessionToken": message.token };
     if (message.refreshToken) toStore["sendable.refreshToken"] = message.refreshToken;
-    chrome.storage.local.set(toStore).then(() => checkSubscription());
+    if (message.subscription) {
+      toStore["sendable.subscription"] = { ...message.subscription, checkedAt: Date.now() };
+    }
+    chrome.storage.local.set(toStore).then(() => {
+      if (!message.subscription) checkSubscription();
+    });
   }
 
   if (message?.type === "SESSION_INVALIDATE") {
