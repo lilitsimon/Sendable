@@ -156,8 +156,9 @@ function setStatus(message) {
   statusText.textContent = message;
 }
 
-function setToast(message) {
+function setToast(message, type) {
   toast.textContent = message;
+  toast.classList.toggle("toast-error", type === "error");
 }
 
 function escapeHtml(value) {
@@ -529,18 +530,18 @@ async function refineText() {
   const text = draftInput.value.trim();
 
   if (!text) {
-    setToast("Add a draft to get started.");
+    setToast("Add a draft to get started.", "error");
     setStatus("Paste a message or use selected text");
     return;
   }
 
   if (text.length < 10) {
-    setToast("Your draft is too short to check. Add a bit more text.");
+    setToast("Too short to check. Add a bit more text.", "error");
     return;
   }
 
   if (text.length > 12000) {
-    setToast("That draft is too long. Try breaking it into shorter sections.");
+    setToast("Too long. Try breaking it into shorter sections.", "error");
     return;
   }
 
@@ -587,7 +588,7 @@ async function refineText() {
     }
 
     state.targetText = data.output || "";
-    setToast("A few refinements, same meaning.");
+    setToast("A few refinements, same meaning.", "success");
 
     if (!state.isPro) {
       state.checksUsedToday += 1;
@@ -598,7 +599,7 @@ async function refineText() {
       updateChecksRemainingDisplay();
     }
   } catch (error) {
-    setToast(normalizeErrorMessage(error.message));
+    setToast(normalizeErrorMessage(error.message), "error");
     setStatus("Couldn’t review this draft");
   } finally {
     setLoading(false);
