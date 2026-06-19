@@ -9,24 +9,17 @@
   <body>
     <main class="app">
       <section class="panel app-shell">
+        <div id="accountSection" class="account-section"></div>
+
         <section id="floatingControl" class="floating-control">
+          <button id="openPanelButton" class="primary-button open-panel-button" type="button">Open Sendable</button>
           <label class="floating-toggle-row" for="floatingButtonToggle">
-            <img
-              class="floating-toggle-icon"
-              src="icons/sendable-icon-128.png"
-              alt=""
-              aria-hidden="true"
-            />
-            <div class="floating-toggle-copy">
-              <span class="floating-toggle-title">Show floating button</span>
-              <span class="floating-toggle-hint">Turn it off now, then bring it back here later.</span>
-            </div>
+            <span class="floating-toggle-title">Show floating button</span>
             <span class="toggle-switch">
               <input id="floatingButtonToggle" type="checkbox" />
               <span class="toggle-track"></span>
             </span>
           </label>
-          <button id="openPanelButton" class="primary-button open-panel-button" type="button">Open Sendable</button>
         </section>
 
         <div id="appContent">
@@ -55,6 +48,7 @@
               <div class="meta-group">
                 <span id="inputCount" class="meta">0 characters</span>
                 <span id="statusText" class="meta"></span>
+                <span id="checksRemaining" class="meta checks-remaining"></span>
               </div>
               <div class="actions">
                 <button id="clearButton" class="ghost-button" type="button">Clear</button>
@@ -63,9 +57,34 @@
             </div>
           </section>
 
-          <div class="section-divider" aria-hidden="true"></div>
+          <div id="sectionDivider" class="section-divider" aria-hidden="true"></div>
 
-          <section class="preview-section">
+          <div id="upgradeWall" class="upgrade-wall" hidden>
+            <div class="upgrade-wall-icon">✦</div>
+            <p class="upgrade-wall-title">You've used your 10 free checks today.</p>
+            <p class="upgrade-wall-sub">Never stop mid-message again. Go Pro and check as much as you want, every single day.</p>
+            <ul class="upgrade-wall-benefits">
+              <li>Unlimited checks, every day. No daily wall.</li>
+              <li>No tab switching to ChatGPT. Check right where you write.</li>
+              <li>Still sounds like you. Just clearer and faster to send.</li>
+            </ul>
+            <a
+              class="primary-button upgrade-cta"
+              href="https://makesendable.com/login?next=upgrade"
+              target="_blank"
+              rel="noopener noreferrer"
+            >Get Pro — $0.40/day</a>
+            <p class="upgrade-wall-reset">Billed as $11.99/month. Cancel any time.</p>
+            <p class="upgrade-wall-reset">Free checks reset at midnight.</p>
+            <a
+              class="upgrade-signin-link"
+              href="https://makesendable.com/login"
+              target="_blank"
+              rel="noopener noreferrer"
+            >Already Pro? Sign in to activate →</a>
+          </div>
+
+          <section id="previewSection" class="preview-section">
             <div class="section-header">
               <div><span class="section-label">Sendable version</span></div>
             </div>
