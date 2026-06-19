@@ -13,15 +13,48 @@ function pickSelectionResult(results) {
 }
 
 const SUBSCRIPTION_API = "https://makesendable.com/api/subscription/check";
+const SUPABASE_URL = "https://silttwnjskzdvpjodeto.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_e-zu0OrramP5Lzw3gCt17w_NzYRczb8";
+
+async function refreshAccessToken(refreshToken) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.access_token) return null;
+    await chrome.storage.local.set({
+      "sendable.sessionToken": data.access_token,
+      "sendable.refreshToken": data.refresh_token
+    });
+    return data.access_token;
+  } catch {
+    return null;
+  }
+}
 
 async function checkSubscription() {
-  const stored = await chrome.storage.local.get("sendable.sessionToken");
-  const token = stored["sendable.sessionToken"];
+  const stored = await chrome.storage.local.get(["sendable.sessionToken", "sendable.refreshToken"]);
+  let token = stored["sendable.sessionToken"];
+  const refreshToken = stored["sendable.refreshToken"];
   if (!token) return;
   try {
-    const res = await fetch(SUBSCRIPTION_API, {
+    let res = await fetch(SUBSCRIPTION_API, {
       headers: { Authorization: `Bearer ${token}` }
     });
+    if (res.status === 401 && refreshToken) {
+      token = await refreshAccessToken(refreshToken);
+      if (!token) return;
+      res = await fetch(SUBSCRIPTION_API, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    }
     if (!res.ok) return;
     const data = await res.json();
     await chrome.storage.local.set({
@@ -35,14 +68,16 @@ async function checkSubscription() {
 chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) => {
   if (message?.type === "SESSION_UPDATE" && message.token) {
     sendResponse({ ok: true });
-    chrome.storage.local.set({ "sendable.sessionToken": message.token })
-      .then(() => checkSubscription());
+    const toStore = { "sendable.sessionToken": message.token };
+    if (message.refreshToken) toStore["sendable.refreshToken"] = message.refreshToken;
+    chrome.storage.local.set(toStore).then(() => checkSubscription());
   }
 
   if (message?.type === "SESSION_INVALIDATE") {
     sendResponse({ ok: true });
     chrome.storage.local.remove([
       "sendable.sessionToken",
+      "sendable.refreshToken",
       "sendable.subscription"
     ]);
   }

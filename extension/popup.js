@@ -142,7 +142,7 @@ function renderAccountSection() {
 }
 
 async function signOut() {
-  await chrome.storage.local.remove([STORAGE_KEYS.sessionToken, STORAGE_KEYS.subscription]);
+  await chrome.storage.local.remove([STORAGE_KEYS.sessionToken, STORAGE_KEYS.subscription, "sendable.refreshToken"]);
   state.isPro = false;
   state.isSignedIn = false;
   state.accountEmail = null;
