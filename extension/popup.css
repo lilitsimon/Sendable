@@ -158,8 +158,14 @@ textarea {
   cursor: pointer;
 }
 
-.floating-toggle-title {
+.floating-toggle-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   flex: 1;
+}
+
+.floating-toggle-title {
   color: var(--text-secondary, #64748b);
   font-size: 13px;
   font-weight: 500;
