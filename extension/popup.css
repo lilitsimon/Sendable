@@ -127,6 +127,21 @@ textarea {
   margin-bottom: 18px;
 }
 
+.floating-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.floating-brand-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(7, 55, 178, 0.16);
+}
+
 .floating-toggle-row {
   display: flex;
   align-items: center;
@@ -469,10 +484,10 @@ button:disabled {
 }
 
 .open-panel-button {
-  width: 100%;
-  height: 46px;
+  flex: 1;
+  height: 42px;
   font-size: 14px;
-  border-radius: 16px;
+  border-radius: 14px;
 }
 
 body.embedded-panel {
