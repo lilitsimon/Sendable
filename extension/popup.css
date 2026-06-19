@@ -792,10 +792,14 @@ body.embedded-panel .refined-display {
 
   .toolbar,
   .section-header,
-  .signal-row,
-  .floating-toggle-row {
+  .signal-row {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .floating-toggle-row {
+    align-items: center;
+    flex-direction: row;
   }
 
   .actions {
